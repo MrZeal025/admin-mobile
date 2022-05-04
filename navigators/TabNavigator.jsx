@@ -15,7 +15,7 @@ const TabNavigator = ({ }) => {
     return (
         <Tab.Navigator
             style={tabNavigation.container}
-            initialRouteName="qrcode"
+            initialRouteName="settings"
             screenOptions={({ route }) => ({
             tabBarIcon: ({ color }) => {
             let iconName;

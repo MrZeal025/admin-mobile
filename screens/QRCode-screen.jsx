@@ -18,9 +18,9 @@ import { createUserVisitationHistroy } from '../apis/qr-code-visitation';
 const QRCodeScreen = () => {
   // states
   const [connectedToNet, setConnectedToNet] = useState(false);
+  const [settedLocation, setSettedLocation] = useState(null);
   const [hasPermissions, setHasPermission] = useState(false);
-  const [message, setMessage] = useState('');
-  const [scanned, setScanned] = useState(true);
+  const [userId, setUserId] = useState('');
   const [modalConfirmVisible, setModalConfirmVisible] = useState(false);
 
   const askForCameraPermission = () => {
@@ -30,32 +30,38 @@ const QRCodeScreen = () => {
     })();
   };
 
+  const getCurrentLocation = async () => {
+    const location = await AsyncStorage.getItem('selectedLocation')
+    setSettedLocation(location);
+  }
+
+  // what happens when we scan the bar code
+  const handlerBarCodeScanned = async ({ type, data }) => {
+    setUserId(data);
+  };
+
   // @auto execute upon screen
   useEffect(() => {
+    getCurrentLocation();
     checkInternetConnection().then(res => setConnectedToNet(res));
     // ask for camera permissions
     askForCameraPermission();
   }, []);
-
-  // what happens when we scan the bar code
-  const handlerBarCodeScanned = async ({ type, data }) => {
-    setScanned(true);
-    setModalConfirmVisible(true);
-    // saving scanned history script starts here
+  
+  const scanAsIn = async () => {
+     // this will run the api call
     const date = new Date().toISOString().split('T')[0];
     const time = new Date().toLocaleTimeString().split(':');
-    const location = await AsyncStorage.getItem('selectedLocation')
     const record = {
-      location: location,
+      location: settedLocation,
       time: `${time[0]}:${time[1]}`,
-      action: message,
+      action: "Scanned the QR Code",
     };
-    console.log(record, data)
-    // this will run the api call
     try {
-      await createUserVisitationHistroy({ ...record, userId: data, date: date });
+      await createUserVisitationHistroy({ ...record, userId: userId, date: date });
+      setModalConfirmVisible(true);
+      setUserId('');
     } catch (error) {
-      console.log(error)
       Alert.alert(
         'Scanning Failed',
         'Please check you internet connection and try again.',
@@ -70,8 +76,37 @@ const QRCodeScreen = () => {
         }
       );
     }
-  };
-  
+  }
+
+  const scanAsOut = async () => {
+     // this will run the api call
+    const date = new Date().toISOString().split('T')[0];
+    const time = new Date().toLocaleTimeString().split(':');
+    const record = {
+      location: settedLocation,
+      time: `${time[0]}:${time[1]}`,
+      action: "Leave the venue",
+    };
+    try {
+      await createUserVisitationHistroy({ ...record, userId: userId, date: date });
+      setModalConfirmVisible(true);
+      setUserId('');
+    } catch (error) {
+      Alert.alert(
+        'Scanning Failed',
+        'Please check you internet connection and try again.',
+        [
+          {
+            text: 'Close',
+            style: 'default',
+          },
+        ],
+        {
+          cancelable: true,
+        }
+      );
+    }
+  }
 
   return (
     <View style={landingPagesOrientation.container}>
@@ -98,46 +133,71 @@ const QRCodeScreen = () => {
               // render if the app has the camera permission
               hasPermissions && (
                 <>
-                  <View style={{ alignItems: 'center' }}>
-                    <Text style={{ fontSize: 20, fontWeight: '700', color: Colors.primary }}>
-                      Place the QR Code in front of the camera
-                    </Text>
-                  </View>
-                  <View style={{ marginTop: -50 }}>
-                    <View style={styles.barcodebox}>
-                      <BarCodeScanner
-                        style={{
-                          height: Dimensions.get('window').height - 70,
-                          width: Dimensions.get('window').width - 70,
-                        }}
-                        onBarCodeScanned={scanned ? undefined : handlerBarCodeScanned}
-                      />
-                    </View>
-                    <View style={{ display: 'flex', flexDirection: "row", justifyContent: "space-around"}}>
-                      <CustomButton
-                        title="Scan In"
-                        color={Colors.primary}
-                        textColor="white"
-                        onPress={() => {
-                          setMessage('Scanned the QR Code')
-                          console.log(scanned)
-                          setScanned(false);
-                          checkInternetConnection().then(res => setConnectedToNet(res));
-                        }}
-                      />
-                      <CustomButton
-                        title="Scan Out"
-                        color={Colors.red}
-                        textColor="white"
-                        onPress={() => {
-                          setMessage('Leave the venue');
-                          setScanned(false);
-                          checkInternetConnection().then(res => setConnectedToNet(res));
-                        }}
-                      />
-                    </View>
-                    
-                  </View>
+                  {
+                    settedLocation ? <>
+                      <View style={{ alignItems: 'center' }}>
+                        <Text style={{ fontSize: 20, fontWeight: '700', color: Colors.primary }}>
+                          {userId ? "Scan completed" : "Place your QR Code in front of the camera" }
+                        </Text>
+                      </View>
+                      <View style={{ marginTop: -50 }}>
+                        <View style={styles.barcodebox}>
+                          <BarCodeScanner
+                            style={{
+                              height: Dimensions.get('window').height - 70,
+                              width: Dimensions.get('window').width - 70,
+                            }}
+                            onBarCodeScanned={handlerBarCodeScanned}
+                          />
+                        </View>
+                        <View style={{ display: 'flex', flexDirection: "row", justifyContent: "space-around"}}>
+                          <CustomButton
+                            title="Scan In"
+                            color={Colors.primary}
+                            textColor="white"
+                            onPress={() => {
+                              scanAsIn();
+                              checkInternetConnection().then(res => setConnectedToNet(res));
+                            }}
+                          />
+                          <CustomButton
+                            title="Scan Out"
+                            color={Colors.red}
+                            textColor="white"
+                            onPress={() => {
+                              scanAsOut();
+                              checkInternetConnection().then(res => setConnectedToNet(res));
+                            }}
+                          />
+                        </View>
+                      </View>
+                    </>
+                    : <>
+                        <View
+                        style={[
+                          landingPagesOrientation.textContainer,
+                          landingPagesOrientation.textContaineredCenter,
+                          landingPagesOrientation.otpContianer,
+                          {
+                            marginTop: '60%',
+                          },
+                        ]}
+                      >
+                        <Feather name="settings" size={90} color={Colors.primary} />
+                        <Text style={{ textAlign: 'center', marginTop: 20, fontSize: 17, fontWeight: '700' }}>
+                          Please set a default location on the settings tab in order to use this feature.
+                        </Text>
+                      </View>
+                      <View style={{ marginTop: 20, marginBottom: 20 }}>
+                        <CustomButton2
+                          title="Reload page"
+                          color={'grey'}
+                          textColor={Colors.lightGrey}
+                          onPress={() => getCurrentLocation()}
+                        />
+                      </View>
+                      </>
+                  }
                   {/* confirm modal for saving the data */}
                   <Modal
                     animationType="slide"
@@ -215,7 +275,7 @@ const QRCodeScreen = () => {
               title="Reload page"
               color={'grey'}
               textColor={Colors.lightGrey}
-              onPress={() => checkInternetConnection().then(res => setConnectedToNet(res))}
+              onPress={() => getCurrentLocation()}
             />
           </>
       }

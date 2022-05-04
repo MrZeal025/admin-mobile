@@ -14,6 +14,11 @@ const SettingsScreen = () => {
   const [items, setItems] = useState([]);
   const [value, setValue] = useState(null);
   const [modalConfirmVisible, setModalConfirmVisible] = useState(false);
+  
+  const getCurrentLocation = async () => {
+    const location = await AsyncStorage.getItem('selectedLocation')
+    setValue(location);
+  }
 
   const getAllLocations = async () => {
     try {
@@ -30,6 +35,7 @@ const SettingsScreen = () => {
 
   useEffect(() => {
     getAllLocations();
+    getCurrentLocation();
   }, []);
 
   const showSuccessAlert = () => {
