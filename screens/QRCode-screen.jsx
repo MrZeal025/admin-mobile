@@ -271,11 +271,11 @@ const QRCodeScreen = () => {
                 Please make sure that you are connected to a stable internet connection in order to continue.
               </Text>
             </View>
-            <CustomButton
+            <CustomButton2
               title="Reload page"
               color={'grey'}
               textColor={Colors.lightGrey}
-              onPress={() => getCurrentLocation()}
+              onPress={() => checkInternetConnection().then(res => setConnectedToNet(res))}
             />
           </>
       }
