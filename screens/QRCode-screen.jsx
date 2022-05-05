@@ -230,6 +230,7 @@ const QRCodeScreen = () => {
                             style={{ width: '100%' }}
                             onPress={() => {
                               setModalConfirmVisible(!modalConfirmVisible);
+                              setUserId('');
                             }}
                           >
                             <View
