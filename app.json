@@ -1,14 +1,14 @@
 {
   "expo": {
-    "name": "admin-mobile",
-    "slug": "admin-mobile",
+    "name": "JuanBreath Scanner",
+    "slug": "juanbreathscanner",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/icon-jbscanner.png",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/splash-jb.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#2a749f"
     },
     "updates": {
       "fallbackToCacheTimeout": 0
@@ -20,11 +20,11 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "juanbreathdev.juanbreathscanner",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#FFFFFF"
-      },
-      "package": "com.zeal_25.adminmobile"
+        "foregroundImage": "./assets/icon-jbscanner.png",
+        "backgroundColor": "#2a749f"
+      }
     },
     "web": {
       "favicon": "./assets/favicon.png"
