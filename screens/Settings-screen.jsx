@@ -73,31 +73,33 @@ const SettingsScreen = () => {
 
   return (
     <SafeAreaView style={landingPagesOrientation.container}>
-      <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
-        <Text style={displayFormContainer.formsHeader}>Admin Scanner Settings</Text>
-        <View style={{ marginTop: 10 }}>
-          <View style={{ marginBottom: 15 }}>
-            <Text style={[displayFormContainer.formCaptions, { marginBottom: 10}]}>Set Current Location</Text>
-            <DropDownPicker
-            schema={{
-                label: 'label',
-                value: 'name'
-              }}
-              open={open}
-              value={value}
-              items={items}
-              setOpen={setOpen}
-              setValue={setValue}
-              setItems={setItems}
-              onSelectItem={ async (item) => {
-                await AsyncStorage.setItem('selectedLocation', item.name)
-              }}
-            />
-          </View>
-          <View style={{ marginTop: 20, marginBottom: 20 }}>
-            <CustomButton color={Colors.primary} textColor="white" onPress={() => {updateUserTypeFunction()}} title="Update" />
-          </View>
+      <ScrollView style={{ height: 100, width: '120%', position: 'absolute' }} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
+        
+      </ScrollView>
+      <Text style={displayFormContainer.formsHeader}>Admin Scanner Settings</Text>
+      <View style={{ marginTop: 10 }}>
+        <View style={{ marginBottom: 15 }}>
+          <Text style={[displayFormContainer.formCaptions, { marginBottom: 10}]}>Set Current Location</Text>
+          <DropDownPicker
+          schema={{
+              label: 'label',
+              value: 'name'
+            }}
+            open={open}
+            value={value}
+            items={items}
+            setOpen={setOpen}
+            setValue={setValue}
+            setItems={setItems}
+            onSelectItem={ async (item) => {
+              await AsyncStorage.setItem('selectedLocation', item.name)
+            }}
+          />
         </View>
+        <View style={{ marginTop: 20, marginBottom: 20 }}>
+          <CustomButton color={Colors.primary} textColor="white" onPress={() => {updateUserTypeFunction()}} title="Update" />
+        </View>
+      </View>
         {/* confirm modal for saving the data */}
           <Modal
             animationType="slide"
@@ -162,7 +164,6 @@ const SettingsScreen = () => {
               </View>
             </View>
         </Modal>
-      </ScrollView>
     </SafeAreaView>
 
   );

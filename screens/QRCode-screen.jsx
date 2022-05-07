@@ -109,7 +109,7 @@ const QRCodeScreen = () => {
   }
 
   return (
-    <View style={landingPagesOrientation.container}>
+    <View style={landingPagesOrientation.container2}>
       {
         connectedToNet ? (
           <>
@@ -135,42 +135,51 @@ const QRCodeScreen = () => {
                 <>
                   {
                     settedLocation ? <>
-                      <View style={{ alignItems: 'center' }}>
-                        <Text style={{ fontSize: 20, fontWeight: '700', color: Colors.primary }}>
+                      <View style={{ alignItems: 'center', marginBottom: 10 }}>
+                        <Text style={{ fontSize: 18, fontWeight: '700', color: Colors.primary }}>
                           {userId ? "Scan completed" : "Place your QR Code in front of the camera" }
                         </Text>
                       </View>
-                      <View style={{ marginTop: -50 }}>
-                        <View style={styles.barcodebox}>
-                          <BarCodeScanner
-                            style={{
-                              height: Dimensions.get('window').height - 70,
-                              width: Dimensions.get('window').width - 70,
-                            }}
+                      <View 
+                        style={{
+                          flex: 1,
+                          alignItems: 'center'
+                        }}
+                        >
+                          <View style={{
+                            height: Dimensions.get('window').height - 350, 
+                            width: Dimensions.get('screen').width - 70.75,
+                            overflow: 'hidden'
+                          }}>
+                            <BarCodeScanner
+                              style={{
+                                height: Dimensions.get('screen').height - 350,
+                                width: Dimensions.get('screen').width - 70.75
+                              }}
                             onBarCodeScanned={handlerBarCodeScanned}
                           />
+                          </View>
+                          <View style={{ marginTop: 20, display: 'flex', flexDirection: "row", justifyContent: "space-around" }}>
+                            <CustomButton
+                              title="Scan In"
+                              color={Colors.primary}
+                              textColor="white"
+                              onPress={() => {
+                                scanAsIn();
+                                checkInternetConnection().then(res => setConnectedToNet(res));
+                              }}
+                            />
+                            <CustomButton
+                              title="Scan Out"
+                              color={Colors.red}
+                              textColor="white"
+                              onPress={() => {
+                                scanAsOut();
+                                checkInternetConnection().then(res => setConnectedToNet(res));
+                              }}
+                            />
+                          </View>
                         </View>
-                        <View style={{ display: 'flex', flexDirection: "row", justifyContent: "space-around"}}>
-                          <CustomButton
-                            title="Scan In"
-                            color={Colors.primary}
-                            textColor="white"
-                            onPress={() => {
-                              scanAsIn();
-                              checkInternetConnection().then(res => setConnectedToNet(res));
-                            }}
-                          />
-                          <CustomButton
-                            title="Scan Out"
-                            color={Colors.red}
-                            textColor="white"
-                            onPress={() => {
-                              scanAsOut();
-                              checkInternetConnection().then(res => setConnectedToNet(res));
-                            }}
-                          />
-                        </View>
-                      </View>
                     </>
                     : <>
                         <View

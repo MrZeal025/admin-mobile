@@ -33,8 +33,12 @@ export const landingPagesOrientation = StyleSheet.create({
   container: {
     flex: 1,
     paddingTop: StatusBar.currentHeight,
-    marginTop: 10,
     paddingHorizontal: 35,
+    position: 'relative',
+  },
+  container2: {
+    flex: 1,
+    paddingTop: StatusBar.currentHeight,
     position: 'relative',
   },
   historyContainer: {

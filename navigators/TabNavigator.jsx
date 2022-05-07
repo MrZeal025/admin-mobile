@@ -17,13 +17,13 @@ const TabNavigator = ({ }) => {
             style={tabNavigation.container}
             initialRouteName="settings"
             screenOptions={({ route }) => ({
-            tabBarIcon: ({ color }) => {
-            let iconName;
-                if (route.name === 'qrcode') {
-                    iconName = 'qrcode';
-                } else {
-                    iconName = 'cogs';
-                }
+                tabBarIcon: ({ color }) => {
+                    let iconName;
+                    if (route.name === 'qrcode') {
+                        iconName = 'qrcode';
+                    } else {
+                        iconName = 'cogs';
+                    }
                     // You can return any component that you like here!
                     return <FontAwesome name={iconName} size={21} color={color} />;
                 },
