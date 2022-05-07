@@ -1,17 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 // native components
-import { Text, View, Alert, SafeAreaView, Modal, StyleSheet, TouchableOpacity } from 'react-native';
+import { Text, View, Alert, SafeAreaView, Modal, StyleSheet, TouchableOpacity, ScrollView, RefreshControl } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { displayFormContainer, landingPagesOrientation, } from '../styles/styles-screens';
 import { Colors } from '../styles/styles-colors';
 import { getLocation } from "../apis/get-all-location";
 import CustomButton from '../_utils/CustomButton';
 import DropDownPicker from 'react-native-dropdown-picker';
+import { checkInternetConnection } from "../_utils/CheckIfConnectedToInternet";
 
 const SettingsScreen = () => {
   // default states
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);
   const [value, setValue] = useState(null);
   const [modalConfirmVisible, setModalConfirmVisible] = useState(false);
   
@@ -32,6 +34,21 @@ const SettingsScreen = () => {
   const updateUserTypeFunction = async () => {
     setModalConfirmVisible(true);
   };
+
+  const wait = timeout => {
+    return new Promise(resolve => {
+      setTimeout(resolve, timeout);
+    });
+  };
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+
+    wait(2000).then(() => {
+      setRefreshing(false);
+      checkInternetConnection().then(() => getAllLocations());
+    });
+  }, [refreshing]);
 
   useEffect(() => {
     getAllLocations();
@@ -56,95 +73,96 @@ const SettingsScreen = () => {
 
   return (
     <SafeAreaView style={landingPagesOrientation.container}>
-      <Text style={displayFormContainer.formsHeader}>Admin Scanner Settings</Text>
-      <View style={{ marginTop: 10 }}>
-        <View style={{ marginBottom: 15 }}>
-          <Text style={[displayFormContainer.formCaptions, { marginBottom: 10}]}>Set Current Location</Text>
-          <DropDownPicker
-          schema={{
-              label: 'label',
-              value: 'name'
-            }}
-            open={open}
-            value={value}
-            items={items}
-            setOpen={setOpen}
-            setValue={setValue}
-            setItems={setItems}
-            onSelectItem={ async (item) => {
-              await AsyncStorage.setItem('selectedLocation', item.name)
-            }}
-          />
-        </View>
-        <View style={{ marginTop: 20, marginBottom: 20 }}>
-          <CustomButton color={Colors.primary} textColor="white" onPress={() => {updateUserTypeFunction()}} title="Update" />
-        </View>
-      </View>
-
-      {/* confirm modal for saving the data */}
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalConfirmVisible}
-        onRequestClose={() => {
-          setModalConfirmVisible(!modalConfirmVisible);
-        }}
-      >
-        <View style={styles.centeredView}>
-          <View style={[styles.modalView]}>
-            <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-              <Text style={styles.modalText}>Do you want to save the changes?</Text>
-            </View>
-            <View
-              style={{
-                display: 'flex',
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                width: '100%',
-                marginTop: 15,
+      <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
+        <Text style={displayFormContainer.formsHeader}>Admin Scanner Settings</Text>
+        <View style={{ marginTop: 10 }}>
+          <View style={{ marginBottom: 15 }}>
+            <Text style={[displayFormContainer.formCaptions, { marginBottom: 10}]}>Set Current Location</Text>
+            <DropDownPicker
+            schema={{
+                label: 'label',
+                value: 'name'
               }}
-            >
-            <TouchableOpacity
-                style={{ width: '50%' }}
-                onPress={() => setModalConfirmVisible(!modalConfirmVisible)}
-              >
-                <View
-                  style={{
-                    backgroundColor: Colors.lightGrey,
-                    height: 50,
-                    justifyContent: 'center',
-                    marginRight: 10,
-                    alignItems: 'center',
-                    borderRadius: 3,
-                  }}
-                >
-                  <Text style={{ fontSize: 16, fontWeight: '700' }}>No</Text>
-                </View>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={{ width: '50%' }}
-                onPress={() => {
-                  setModalConfirmVisible(false);
-                  showSuccessAlert();
-                }}
-              >
-                <View
-                  style={{
-                    backgroundColor: Colors.accent,
-                    height: 50,
-                    marginLeft: 10,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    borderRadius: 3,
-                  }}
-                >
-                  <Text style={{ fontSize: 16, fontWeight: '700', color: 'white' }}>Yes</Text>
-                </View>
-              </TouchableOpacity>
-            </View>
+              open={open}
+              value={value}
+              items={items}
+              setOpen={setOpen}
+              setValue={setValue}
+              setItems={setItems}
+              onSelectItem={ async (item) => {
+                await AsyncStorage.setItem('selectedLocation', item.name)
+              }}
+            />
+          </View>
+          <View style={{ marginTop: 20, marginBottom: 20 }}>
+            <CustomButton color={Colors.primary} textColor="white" onPress={() => {updateUserTypeFunction()}} title="Update" />
           </View>
         </View>
-      </Modal>
+        {/* confirm modal for saving the data */}
+          <Modal
+            animationType="slide"
+            transparent={true}
+            visible={modalConfirmVisible}
+            onRequestClose={() => {
+              setModalConfirmVisible(!modalConfirmVisible);
+            }}
+          >
+            <View style={styles.centeredView}>
+              <View style={[styles.modalView]}>
+                <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                  <Text style={styles.modalText}>Do you want to save the changes?</Text>
+                </View>
+                <View
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    width: '100%',
+                    marginTop: 15,
+                  }}
+                >
+                <TouchableOpacity
+                    style={{ width: '50%' }}
+                    onPress={() => setModalConfirmVisible(!modalConfirmVisible)}
+                  >
+                    <View
+                      style={{
+                        backgroundColor: Colors.lightGrey,
+                        height: 50,
+                        justifyContent: 'center',
+                        marginRight: 10,
+                        alignItems: 'center',
+                        borderRadius: 3,
+                      }}
+                    >
+                      <Text style={{ fontSize: 16, fontWeight: '700' }}>No</Text>
+                    </View>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={{ width: '50%' }}
+                    onPress={() => {
+                      setModalConfirmVisible(false);
+                      showSuccessAlert();
+                    }}
+                  >
+                    <View
+                      style={{
+                        backgroundColor: Colors.accent,
+                        height: 50,
+                        marginLeft: 10,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        borderRadius: 3,
+                      }}
+                    >
+                      <Text style={{ fontSize: 16, fontWeight: '700', color: 'white' }}>Yes</Text>
+                    </View>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+        </Modal>
+      </ScrollView>
     </SafeAreaView>
 
   );
