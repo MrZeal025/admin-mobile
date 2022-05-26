@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 // native components
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Text, View, StyleSheet, Dimensions, Modal, Alert, TouchableOpacity } from 'react-native';
+import { Text, View, StyleSheet, Dimensions, Modal, Alert, TouchableOpacity, ScrollView, RefreshControl } from 'react-native';
 import { BarCodeScanner } from 'expo-barcode-scanner';
 import { Feather } from '@expo/vector-icons';
 // stylesheet
@@ -15,13 +15,15 @@ import CustomButton2 from '../_utils/CustomButton';
 // apis
 import { createUserVisitationHistroy } from '../apis/qr-code-visitation';
 
-const QRCodeScreen = () => {
+const QRCodeScreen = ({ navigation }) => {
   // states
   const [connectedToNet, setConnectedToNet] = useState(false);
   const [settedLocation, setSettedLocation] = useState(null);
   const [hasPermissions, setHasPermission] = useState(false);
   const [userId, setUserId] = useState('');
   const [modalConfirmVisible, setModalConfirmVisible] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [scanned, setScanned] = useState(false);
 
   const askForCameraPermission = () => {
     (async () => {
@@ -37,7 +39,24 @@ const QRCodeScreen = () => {
 
   // what happens when we scan the bar code
   const handlerBarCodeScanned = async ({ type, data }) => {
+    setScanned(true);
     setUserId(data);
+  };
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+
+    wait(2000).then(() => {
+      setRefreshing(false);
+      setScanned(false);
+      checkInternetConnection().then(() => getCurrentLocation());
+    });
+  }, [refreshing]);
+
+  const wait = timeout => {
+    return new Promise(resolve => {
+      setTimeout(resolve, timeout);
+    });
   };
 
   // @auto execute upon screen
@@ -46,6 +65,7 @@ const QRCodeScreen = () => {
     checkInternetConnection().then(res => setConnectedToNet(res));
     // ask for camera permissions
     askForCameraPermission();
+    
   }, []);
   
   const scanAsIn = async () => {
@@ -110,6 +130,7 @@ const QRCodeScreen = () => {
 
   return (
     <View style={landingPagesOrientation.container2}>
+      <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh}  /> }>
       {
         connectedToNet ? (
           <>
@@ -139,6 +160,7 @@ const QRCodeScreen = () => {
                         <Text style={{ fontSize: 18, fontWeight: '700', color: Colors.primary }}>
                           {userId ? "Scan completed" : "Place your QR Code in front of the camera" }
                         </Text>
+                        <Text>Current Location: <Text style={{ fontWeight: "bold" }}>{settedLocation}</Text> </Text>
                       </View>
                       <View 
                         style={{
@@ -156,7 +178,7 @@ const QRCodeScreen = () => {
                                 height: Dimensions.get('screen').height - 350,
                                 width: Dimensions.get('screen').width - 70.75
                               }}
-                            onBarCodeScanned={handlerBarCodeScanned}
+                            onBarCodeScanned={scanned ? undefined : handlerBarCodeScanned}
                           />
                           </View>
                           <View style={{ marginTop: 20, display: 'flex', flexDirection: "row", justifyContent: "space-around" }}>
@@ -166,6 +188,7 @@ const QRCodeScreen = () => {
                               textColor="white"
                               onPress={() => {
                                 scanAsIn();
+                                setScanned(false);
                                 checkInternetConnection().then(res => setConnectedToNet(res));
                               }}
                             />
@@ -175,6 +198,7 @@ const QRCodeScreen = () => {
                               textColor="white"
                               onPress={() => {
                                 scanAsOut();
+                                setScanned(false);
                                 checkInternetConnection().then(res => setConnectedToNet(res));
                               }}
                             />
@@ -239,6 +263,7 @@ const QRCodeScreen = () => {
                             style={{ width: '100%' }}
                             onPress={() => {
                               setModalConfirmVisible(!modalConfirmVisible);
+                              setScanned(false)
                               setUserId('');
                             }}
                           >
@@ -289,6 +314,7 @@ const QRCodeScreen = () => {
             />
           </>
       }
+      </ScrollView>
     </View>
   );
 };
